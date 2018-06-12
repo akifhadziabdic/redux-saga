@@ -73,9 +73,16 @@ export function runSaga(options, saga, ...args) {
     }
   }
 
+  let connectedChannel = channel
+  if (is.notUndef(dispatch)) {
+    if (process.env.NODE_ENV === 'development') {
+      check(dispatch, is.func, 'dispatch must be a function')
+    }
+    connectedChannel = channel.clone().lift(() => wrapSagaDispatch(dispatch))
+  }
+
   const env = {
-    stdChannel: channel,
-    dispatch: wrapSagaDispatch(dispatch),
+    channel: connectedChannel,
     getState,
     sagaMonitor,
     logError,
